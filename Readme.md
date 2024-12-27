@@ -1,4 +1,4 @@
-#QuiteChat
+# QuiteChat <br/>
 Qchat is a privacy focused real time chat application <br/>
 <br/>
 Men at work <br/>
