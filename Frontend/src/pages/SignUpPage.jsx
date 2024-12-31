@@ -41,7 +41,7 @@ const SignUpPage = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <MessageSquare className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold mt-2">Create Account</h1>
+              <h1 className="text-2xl font-bold mt-2">Qchat</h1>
               <p className="text-base-content/60">
                 Get started with your free account
               </p>
@@ -51,7 +51,7 @@ const SignUpPage = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Full Name</span>
+                <span className="label-text font-medium">Alias</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -138,6 +138,15 @@ const SignUpPage = () => {
           </div>
         </div>
       </div>
+      {/* right side */}
+
+      <div className="flex flex-col justify-center items-center text-center p-8 lg:p-16">
+  <h1 className="text-6xl font-extrabold text-primary mb-6">QChat</h1>
+  <p className="text-2xl text-base-content/70 leading-relaxed">
+    Privacy is Power<br />Stay Anonymous
+  </p>
+</div>
+
     </div>
   );
 };
