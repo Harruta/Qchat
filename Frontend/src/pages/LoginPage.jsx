@@ -9,16 +9,16 @@ import {
   Eye, 
   EyeOff, 
   Loader2 
-} from "lucide-react"; // Add correct icon library import based on your setup
+} from "lucide-react"; 
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "", // Added as it's used in formData
+    fullName: "",
     email: "",
-    password: "", // Corrected spelling from "passowrd"
+    password: "", 
   });
-  const { login, isLoggingIn } = useAuthStore(); // Corrected spelling from "isloggingIn"
+  const { login, isLoggingIn } = useAuthStore(); /
 
   const handleSubmit = async (e) => {
     e.preventDefault();
