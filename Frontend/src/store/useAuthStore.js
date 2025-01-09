@@ -32,7 +32,7 @@ export const useAuthStore = create((set) => ({
         }
     },
     login: async (data) => {
-        
+        set({ isLoggingIng: true})
     },
     logout: async () => {
         try {
