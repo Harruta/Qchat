@@ -6,10 +6,33 @@ import { getReceiverSocketId, io } from "../lib/socket.js";
 
 export const getUsersForSidebar = async (req, res) => {
   try {
-    const loggedInUserId = req.user._id;
-    const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
+    const userId = req.user._id;
 
-    res.status(200).json(filteredUsers);
+    // Find all messages where the current user is either sender or receiver
+    const messages = await Message.find({
+      $or: [
+        { senderId: userId },
+        { receiverId: userId }
+      ]
+    });
+
+    // Get unique user IDs from messages
+    const userIds = messages.reduce((users, message) => {
+      if (message.senderId.toString() !== userId.toString()) {
+        users.add(message.senderId.toString());
+      }
+      if (message.receiverId.toString() !== userId.toString()) {
+        users.add(message.receiverId.toString());
+      }
+      return users;
+    }, new Set());
+
+    // Get user details for all participants (excluding the current user)
+    const users = await User.find({
+      _id: { $in: Array.from(userIds) }
+    }).select("-password");
+
+    res.status(200).json(users);
   } catch (error) {
     console.error("Error in getUsersForSidebar: ", error.message);
     res.status(500).json({ error: "Internal server error" });
