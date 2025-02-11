@@ -6,6 +6,7 @@ import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
+import { decryptMessage } from "../utils/encryption";
 
 const ChatContainer = () => {
   const {
@@ -32,6 +33,16 @@ const ChatContainer = () => {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  const renderMessageText = (message) => {
+    try {
+      if (!message.text) return null;
+      return decryptMessage(message.text);
+    } catch (error) {
+      console.error('Decryption error:', error);
+      return "Unable to decrypt message";
+    }
+  };
 
   if (isMessagesLoading) {
     return (
@@ -79,7 +90,7 @@ const ChatContainer = () => {
                   className="sm:max-w-[200px] rounded-md mb-2"
                 />
               )}
-              {message.text && <p>{message.text}</p>}
+              {message.text && <p>{renderMessageText(message)}</p>}
             </div>
           </div>
         ))}

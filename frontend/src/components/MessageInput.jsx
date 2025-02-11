@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { encryptMessage } from "../utils/encryption";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
@@ -33,12 +34,13 @@ const MessageInput = () => {
     if (!text.trim() && !imagePreview) return;
 
     try {
+      const encryptedText = text.trim() ? encryptMessage(text.trim()) : null;
+      
       await sendMessage({
-        text: text.trim(),
+        text: encryptedText,
         image: imagePreview,
       });
 
-      // Clear form
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
