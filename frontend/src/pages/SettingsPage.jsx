@@ -1,6 +1,7 @@
 import { THEMES } from "../constants";
 import { useThemeStore } from "../store/useThemeStore";
 import { Send } from "lucide-react";
+import { useSettingsStore } from "../store/useSettingsStore";
 
 const PREVIEW_MESSAGES = [
   { id: 1, content: "Hey! How's it going?", isSent: false },
@@ -9,6 +10,7 @@ const PREVIEW_MESSAGES = [
 
 const SettingsPage = () => {
   const { theme, setTheme } = useThemeStore();
+  const { useLocalStorage, toggleStoragePreference } = useSettingsStore();
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -108,6 +110,26 @@ const SettingsPage = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Storage Preferences */}
+          <div className="bg-base-100 rounded-xl p-6">
+            <h2 className="text-lg font-medium mb-4">Storage Preferences</h2>
+            <div className="form-control">
+              <label className="label cursor-pointer">
+                <span className="label-text">Store messages locally</span>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-primary"
+                  checked={useLocalStorage}
+                  onChange={toggleStoragePreference}
+                />
+              </label>
+              <p className="text-sm text-base-content/70 mt-2">
+                When enabled, messages will be stored in your browser instead of our database.
+                Note: Messages will not sync across devices when using local storage.
+              </p>
             </div>
           </div>
         </div>
