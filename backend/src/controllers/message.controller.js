@@ -66,20 +66,21 @@ export const sendMessage = async (req, res) => {
 
     let imageUrl;
     if (image) {
-      // Upload base64 image to cloudinary
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
     }
 
+    // Store encrypted message in database
     const newMessage = new Message({
       senderId,
       receiverId,
-      text,
+      text, // Text is already encrypted from frontend
       image: imageUrl,
     });
 
     await newMessage.save();
 
+    // Send encrypted message through socket
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
