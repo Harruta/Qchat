@@ -5,18 +5,44 @@ import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 
 const Sidebar = () => {
-  const { getUsersWithChats, usersWithChats, selectedUser, setSelectedUser, isLoading } = useChatStore();
-  const { onlineUsers } = useAuthStore();
+  const { 
+    getUsersWithChats, 
+    getAllUsers,
+    usersWithChats, 
+    allUsers,
+    selectedUser, 
+    setSelectedUser, 
+    isLoading 
+  } = useChatStore();
+  const { onlineUsers, authUser } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     getUsersWithChats();
-  }, [getUsersWithChats]);
+    getAllUsers();
+  }, [getUsersWithChats, getAllUsers]);
 
-  const filteredUsers = usersWithChats.filter(user => {
-    const search = searchQuery.toLowerCase();
-    return user.fullName.toLowerCase().includes(search);
-  });
+  // Debug log
+  console.log("Search Query:", searchQuery);
+  console.log("Users:", usersWithChats);
+
+  const filteredUsers = searchQuery.trim()
+    ? allUsers.filter(user => {
+        if (user._id === authUser?._id) return false;
+        
+        const search = searchQuery.toLowerCase().trim();
+        const fullName = (user.fullName || "").toLowerCase();
+        const email = (user.email || "").toLowerCase();
+        
+        return fullName.includes(search) || email.includes(search);
+      })
+    : usersWithChats;
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    console.log("Search input changed:", value);
+    setSearchQuery(value);
+  };
 
   if (isLoading) return <SidebarSkeleton />;
 
@@ -25,7 +51,9 @@ const Sidebar = () => {
       <div className="border-b border-base-300 w-full p-5">
         <div className="flex items-center gap-2 mb-3">
           <Users className="size-6" />
-          <span className="font-medium hidden lg:block">Chat History</span>
+          <span className="font-medium hidden lg:block">
+            {searchQuery ? "Search Results" : "Chat History"}
+          </span>
         </div>
         <div className="hidden lg:block">
           <div className="relative">
@@ -33,7 +61,7 @@ const Sidebar = () => {
               type="text"
               placeholder="Search users..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearch}
               className="input input-bordered input-sm w-full pl-9"
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-base-content/50" />
@@ -66,8 +94,11 @@ const Sidebar = () => {
               </div>
             </div>
 
-            <div className="flex-1 hidden lg:block text-left">
+            <div className="flex-1 hidden lg:block text-left overflow-hidden">
               <p className="font-medium truncate">{user.fullName}</p>
+              <p className="text-sm text-base-content/70 truncate">
+                {user.username || user.email}
+              </p>
             </div>
 
             {onlineUsers.includes(user._id) && (

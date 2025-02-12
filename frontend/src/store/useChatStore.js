@@ -9,9 +9,20 @@ import { useSettingsStore } from './useSettingsStore';
 export const useChatStore = create((set, get) => ({
   messages: [],
   usersWithChats: [],
+  allUsers: [],
   selectedUser: null,
   isLoading: false,
   isMessagesLoading: false,
+
+  getAllUsers: async () => {
+    try {
+      const res = await axiosInstance.get("/messages/users/all");
+      set({ allUsers: res.data });
+    } catch (error) {
+      console.error("Error fetching all users:", error);
+      toast.error("Failed to fetch users");
+    }
+  },
 
   getUsersWithChats: async () => {
     set({ isLoading: true });
