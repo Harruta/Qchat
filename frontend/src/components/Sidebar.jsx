@@ -32,9 +32,8 @@ const Sidebar = () => {
         
         const search = searchQuery.toLowerCase().trim();
         const fullName = (user.fullName || "").toLowerCase();
-        const email = (user.email || "").toLowerCase();
         
-        return fullName.includes(search) || email.includes(search);
+        return fullName.includes(search);
       })
     : usersWithChats;
 
@@ -96,9 +95,6 @@ const Sidebar = () => {
 
             <div className="flex-1 hidden lg:block text-left overflow-hidden">
               <p className="font-medium truncate">{user.fullName}</p>
-              <p className="text-sm text-base-content/70 truncate">
-                {user.username || user.email}
-              </p>
             </div>
 
             {onlineUsers.includes(user._id) && (
