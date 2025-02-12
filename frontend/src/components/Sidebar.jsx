@@ -1,50 +1,50 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { Users, Search } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
-import { Users } from "lucide-react";
 
 const Sidebar = () => {
   const { getUsersWithChats, usersWithChats, selectedUser, setSelectedUser, isLoading } = useChatStore();
   const { onlineUsers } = useAuthStore();
-  const [showOnlineOnly, setShowOnlineOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     getUsersWithChats();
   }, [getUsersWithChats]);
 
-  const filteredUsers = showOnlineOnly
-    ? usersWithChats.filter((user) => onlineUsers.includes(user._id))
-    : usersWithChats;
+  const filteredUsers = usersWithChats.filter(user => {
+    const search = searchQuery.toLowerCase();
+    return user.fullName.toLowerCase().includes(search);
+  });
 
   if (isLoading) return <SidebarSkeleton />;
 
   return (
     <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
       <div className="border-b border-base-300 w-full p-5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-3">
           <Users className="size-6" />
           <span className="font-medium hidden lg:block">Chat History</span>
         </div>
-        <div className="mt-3 hidden lg:flex items-center gap-2">
-          <label className="cursor-pointer flex items-center gap-2">
+        <div className="hidden lg:block">
+          <div className="relative">
             <input
-              type="checkbox"
-              checked={showOnlineOnly}
-              onChange={(e) => setShowOnlineOnly(e.target.checked)}
-              className="checkbox checkbox-sm"
+              type="text"
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input input-bordered input-sm w-full pl-9"
             />
-            <span className="text-sm">Show online only</span>
-          </label>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-base-content/50" />
+          </div>
         </div>
       </div>
 
       <div className="overflow-y-auto w-full py-3">
         {filteredUsers.length === 0 && (
           <div className="text-center text-zinc-500 py-4">
-            {showOnlineOnly 
-              ? "No online chat partners" 
-              : "No chat history yet. Start a conversation!"}
+            {searchQuery ? "No users found" : "No chat history yet"}
           </div>
         )}
         
@@ -66,8 +66,8 @@ const Sidebar = () => {
               </div>
             </div>
 
-            <div className="flex flex-col items-start hidden lg:block">
-              <p className="font-medium">{user.fullName}</p>
+            <div className="flex-1 hidden lg:block text-left">
+              <p className="font-medium truncate">{user.fullName}</p>
             </div>
 
             {onlineUsers.includes(user._id) && (
