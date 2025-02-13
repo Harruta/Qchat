@@ -18,12 +18,10 @@ function App() {
   }
 
   return (
-    <Router>
-      <div>
-        <Toaster position="top-center" reverseOrder={false} />
-        {authUser ? <AuthenticatedApp /> : <UnauthenticatedApp />}
-      </div>
-    </Router>
+    <div className="min-h-screen bg-base-200">
+      {authUser ? <AuthenticatedApp /> : <UnauthenticatedApp />}
+      <Toaster position="top-center" reverseOrder={false} />
+    </div>
   );
 }
 
