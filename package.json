@@ -1,0 +1,22 @@
+{
+  "name": "qchat",
+  "version": "1.0.0",
+  "description": "Privacy focused chat app",
+  "main": "index.js",
+  "scripts": {
+    "buld":"",
+    "start": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Harruta/Qchat.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Harruta/Qchat/issues"
+  },
+  "homepage": "https://github.com/Harruta/Qchat#readme"
+}
