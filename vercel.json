@@ -10,23 +10,25 @@
       "use": "@vercel/static-build",
       "config": {
         "buildCommand": "cd frontend && npm install && npm run build",
-        "outputDirectory": "dist"
+        "outputDirectory": "frontend/dist"
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/src/index.js"
+      "dest": "/backend/src/index.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/frontend/dist/assets/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/dist/$1",
-      "continue": true
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/dist/index.html"
+      "dest": "/frontend/dist/index.html"
     }
   ]
 } 
