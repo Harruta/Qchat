@@ -59,20 +59,30 @@ export const useChatStore = create((set, get) => ({
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
     const useLocalStorage = useSettingsStore.getState().useLocalStorage;
+    const socket = useAuthStore.getState().socket;
+    const currentUserId = useAuthStore.getState().authUser._id;
     
     try {
       if (useLocalStorage) {
         const newMessage = {
-          _id: Date.now().toString(),
-          senderId: useAuthStore.getState().authUser._id,
+          _id: `local_${Date.now()}_${currentUserId}`,
+          senderId: currentUserId,
           receiverId: selectedUser._id,
           text: messageData.text,
           image: messageData.image,
           createdAt: new Date().toISOString(),
+          isLocal: true
         };
 
+        // Save to local storage and update state
         await localMessageStorage.saveMessage(selectedUser._id, newMessage);
         set({ messages: [...messages, newMessage] });
+
+        // Emit to receiver
+        socket.emit("localMessage", {
+          message: newMessage,
+          receiverId: selectedUser._id
+        });
       } else {
         const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
         set({ messages: [...messages, res.data] });
@@ -89,13 +99,45 @@ export const useChatStore = create((set, get) => ({
     if (!selectedUser) return;
 
     const socket = useAuthStore.getState().socket;
+    const useLocalStorage = useSettingsStore.getState().useLocalStorage;
+    const currentUserId = useAuthStore.getState().authUser._id;
 
-    socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
+    const handleMessage = (message) => {
+      const isMessageForCurrentChat = 
+        (message.senderId === selectedUser._id && message.receiverId === currentUserId) ||
+        (message.senderId === currentUserId && message.receiverId === selectedUser._id);
 
-      set({ messages: [...get().messages, newMessage] });
-    });
+      if (!isMessageForCurrentChat) return;
+
+      // Check for duplicates
+      set(state => {
+        const isDuplicate = state.messages.some(msg => 
+          msg._id === message._id || 
+          (msg.text === message.text && 
+           msg.senderId === message.senderId && 
+           Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
+        );
+
+        if (isDuplicate) return state;
+
+        if (useLocalStorage) {
+          localMessageStorage.saveMessage(
+            message.senderId === selectedUser._id ? message.senderId : message.receiverId,
+            message
+          );
+        }
+
+        return { messages: [...state.messages, message] };
+      });
+    };
+
+    socket.on("newMessage", handleMessage);
+    socket.on("localMessage", handleMessage);
+
+    return () => {
+      socket.off("newMessage", handleMessage);
+      socket.off("localMessage", handleMessage);
+    };
   },
 
   setSelectedUser: (selectedUser) => set({ selectedUser }),
