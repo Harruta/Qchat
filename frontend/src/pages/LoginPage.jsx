@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
+import toast from "react-hot-toast";
+import GuestLoginButton from "../components/GuestLoginButton";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -94,6 +96,11 @@ const LoginPage = () => {
               )}
             </button>
           </form>
+
+          {/* Add the guest login button */}
+          <div className="flex justify-center mt-4">
+            <GuestLoginButton />
+          </div>
 
           <div className="text-center">
             <p className="text-base-content/60">

@@ -116,3 +116,28 @@ export const checkAuth = (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const createTempUser = async (req, res) => {
+  try {
+    // Generate a random suffix for the guest name
+    const randomSuffix = Math.floor(Math.random() * 10000);
+    const fullName = `Guest_${randomSuffix}`;
+    const email = `guest${randomSuffix}@tempchat.com`;
+    
+    // Create a temporary user
+    const tempUser = await User.create({
+      fullName,
+      email,
+      isTemp: true,
+      // For temporary accounts you can generate a random password (or use a fixed dummy string)
+      password: Math.random().toString(36).slice(-8),
+    });
+    
+    // Generate a token for this user (this helper sets a cookie and returns the user data)
+    generateToken(tempUser._id, res);
+    res.status(201).json(tempUser);
+  } catch (error) {
+    console.error("Error creating temporary account:", error);
+    res.status(500).json({ message: "Failed to create temporary account" });
+  }
+};

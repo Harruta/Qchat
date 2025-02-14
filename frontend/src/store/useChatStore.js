@@ -56,32 +56,47 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  subscribeToLocalMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+    socket.on("localMessage", (message) => {
+      // Optionally, you could store to local storage here as well
+      set((state) => ({ messages: [...state.messages, message] }));
+      console.log("Received localMessage:", message);
+    });
+  },
+
+  unsubscribeFromLocalMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+    socket.off("localMessage");
+  },
+
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
     const useLocalStorage = useSettingsStore.getState().useLocalStorage;
     const socket = useAuthStore.getState().socket;
-    const currentUserId = useAuthStore.getState().authUser._id;
+    const currentUser = useAuthStore.getState().authUser;
     
     try {
-      if (useLocalStorage) {
+      if (currentUser.isTemp || useLocalStorage) {
         const newMessage = {
-          _id: `local_${Date.now()}_${currentUserId}`,
-          senderId: currentUserId,
+          _id: `local_${Date.now()}_${currentUser._id}`,
+          senderId: currentUser._id,
           receiverId: selectedUser._id,
           text: messageData.text,
           image: messageData.image,
           createdAt: new Date().toISOString(),
-          isLocal: true
+          isLocal: true,
         };
-
-        // Save to local storage and update state
-        await localMessageStorage.saveMessage(selectedUser._id, newMessage);
+        
+        localMessageStorage.saveMessage(selectedUser._id, newMessage);
         set({ messages: [...messages, newMessage] });
-
-        // Emit to receiver
+        
+        // Emit the message so the receiver's client receives it
         socket.emit("localMessage", {
           message: newMessage,
-          receiverId: selectedUser._id
+          receiverId: selectedUser._id,
         });
       } else {
         const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);

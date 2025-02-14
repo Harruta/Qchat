@@ -22,8 +22,7 @@ io.on("connection", (socket) => {
   socket.on("localMessage", ({ message, receiverId }) => {
     const receiverSocketId = userSocketMap[receiverId];
     if (receiverSocketId) {
-      // Only emit to the receiver
-      socket.to(receiverSocketId).emit("localMessage", message);
+      io.to(receiverSocketId).emit("localMessage", message);
     }
   });
 
