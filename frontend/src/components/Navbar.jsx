@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import { LogOut, MessageSquare, Settings, User } from "lucide-react";
+import { LogOut, MessageSquare, Settings, User, Coffee } from "lucide-react";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
@@ -32,7 +32,15 @@ const Navbar = () => {
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
             </Link>
-
+            <a
+              href="https://buymeacoffee.com/codebyharu"
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-sm gap-2"
+            >
+              <Coffee className="w-4 h-4" />
+              <span className="hidden sm:inline">Support</span>
+            </a>
             {authUser && (
               <>
                 <Link to={"/profile"} className={`btn btn-sm gap-2`}>
