@@ -117,32 +117,55 @@ export const useChatStore = create((set, get) => ({
     const currentUserId = useAuthStore.getState().authUser._id;
 
     const handleMessage = (message) => {
-      // Only process messages for the current chat
+      // Check if the message belongs to the active (selected) conversation
       const isMessageForCurrentChat =
         (message.senderId === selectedUser._id && message.receiverId === currentUserId) ||
         (message.senderId === currentUserId && message.receiverId === selectedUser._id);
-      if (!isMessageForCurrentChat) return;
 
-      // Check for duplicates before updating state
-      set(state => {
-        const isDuplicate = state.messages.some(
-          (msg) =>
-            msg._id === message._id ||
-            (msg.text === message.text &&
-              msg.senderId === message.senderId &&
-              Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
-        );
-        if (isDuplicate) return state;
-
-        if (useLocalStorage) {
-          // Save to local storage if necessary (for guest users)
-          localMessageStorage.saveMessage(
-            message.senderId === selectedUser._id ? message.senderId : message.receiverId,
-            message
+      if (isMessageForCurrentChat) {
+        // Add the message if it belongs to the active chat and if its not a duplicate.
+        set((state) => {
+          const isDuplicate = state.messages.some(
+            (msg) =>
+              msg._id === message._id ||
+              (msg.text === message.text &&
+                msg.senderId === message.senderId &&
+                Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
           );
+          if (isDuplicate) return state;
+
+          if (useLocalStorage) {
+            localMessageStorage.saveMessage(
+              message.senderId === selectedUser._id ? message.senderId : message.receiverId,
+              message
+            );
+          }
+          return { messages: [...state.messages, message] };
+        });
+      } else {
+        // This message is for another conversation.
+        // Update the sidebar (usersWithChats) if it doesn't include the sender/receiver already.
+        console.log("New message for another conversation:", message);
+        const currentUsersWithChats = get().usersWithChats;
+        // Determine the conversation partner's ID (the other user).
+        const otherUserId =
+          message.senderId === currentUserId ? message.receiverId : message.senderId;
+        const isAlreadyPresent = currentUsersWithChats.some(
+          (user) => user._id === otherUserId
+        );
+        if (!isAlreadyPresent) {
+          // Try to find the user in the allUsers list (populated from your API).
+          const allUsers = get().allUsers;
+          const newUser =
+            allUsers.find((user) => user._id === otherUserId) || {
+              _id: otherUserId,
+              fullName: "Unknown",
+              profilePic: "/avatar.png",
+            };
+          // Add the new user to the beginning of the usersWithChats array.
+          set({ usersWithChats: [newUser, ...currentUsersWithChats] });
         }
-        return { messages: [...state.messages, message] };
-      });
+      }
     };
 
     socket.on("newMessage", handleMessage);
