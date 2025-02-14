@@ -112,36 +112,35 @@ export const useChatStore = create((set, get) => ({
   subscribeToMessages: () => {
     const { selectedUser } = get();
     if (!selectedUser) return;
-
     const socket = useAuthStore.getState().socket;
     const useLocalStorage = useSettingsStore.getState().useLocalStorage;
     const currentUserId = useAuthStore.getState().authUser._id;
 
     const handleMessage = (message) => {
-      const isMessageForCurrentChat = 
+      // Only process messages for the current chat
+      const isMessageForCurrentChat =
         (message.senderId === selectedUser._id && message.receiverId === currentUserId) ||
         (message.senderId === currentUserId && message.receiverId === selectedUser._id);
-
       if (!isMessageForCurrentChat) return;
 
-      // Check for duplicates
+      // Check for duplicates before updating state
       set(state => {
-        const isDuplicate = state.messages.some(msg => 
-          msg._id === message._id || 
-          (msg.text === message.text && 
-           msg.senderId === message.senderId && 
-           Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
+        const isDuplicate = state.messages.some(
+          (msg) =>
+            msg._id === message._id ||
+            (msg.text === message.text &&
+              msg.senderId === message.senderId &&
+              Math.abs(new Date(msg.createdAt) - new Date(message.createdAt)) < 1000)
         );
-
         if (isDuplicate) return state;
 
         if (useLocalStorage) {
+          // Save to local storage if necessary (for guest users)
           localMessageStorage.saveMessage(
             message.senderId === selectedUser._id ? message.senderId : message.receiverId,
             message
           );
         }
-
         return { messages: [...state.messages, message] };
       });
     };
@@ -149,6 +148,7 @@ export const useChatStore = create((set, get) => ({
     socket.on("newMessage", handleMessage);
     socket.on("localMessage", handleMessage);
 
+    // Return a cleanup function that removes both listeners
     return () => {
       socket.off("newMessage", handleMessage);
       socket.off("localMessage", handleMessage);

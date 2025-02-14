@@ -13,7 +13,6 @@ const ChatContainer = () => {
     messages,
     getMessages,
     subscribeToMessages,
-    unsubscribeFromMessages,
     selectedUser,
     isMessagesLoading,
   } = useChatStore();

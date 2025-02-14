@@ -128,7 +128,6 @@ const SettingsPage = () => {
               </label>
               <p className="text-sm text-base-content/70 mt-2">
                 When enabled, messages will be stored in your browser instead of our database.
-                Note: Messages will not sync across devices when using local storage.
               </p>
             </div>
           </div>
