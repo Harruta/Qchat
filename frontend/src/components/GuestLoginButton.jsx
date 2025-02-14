@@ -13,7 +13,7 @@ const GuestLoginButton = () => {
   };
 
   return (
-    <button onClick={handleGuestLogin} className="btn btn-secondary">
+    <button onClick={handleGuestLogin} className="btn btn-primary">
       Continue as Guest
     </button>
   );
