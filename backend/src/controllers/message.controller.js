@@ -30,7 +30,7 @@ export const getUsersForSidebar = async (req, res) => {
     // Get user details for all participants (excluding the current user)
     const users = await User.find({
       _id: { $in: Array.from(userIds) }
-    }).select("-password");
+    }).select("-password -email");
 
     res.status(200).json(users);
   } catch (error) {
