@@ -1,22 +1,41 @@
-const LOCAL_MESSAGES_KEY = 'chat-messages';
+import { encryptMessage, decryptMessage } from "../utils/encryption";
+
+// Prefix for localStorage key
+const STORAGE_KEY_PREFIX = "chat_messages_";
+
+// Helper to get raw (encrypted) messages from localStorage
+const getRawMessages = (userId) => {
+  const key = STORAGE_KEY_PREFIX + userId;
+  const data = localStorage.getItem(key);
+  return data ? JSON.parse(data) : [];
+};
 
 export const localMessageStorage = {
-  getAllMessages: (chatId) => {
-    const messages = JSON.parse(localStorage.getItem(LOCAL_MESSAGES_KEY) || '{}');
-    return messages[chatId] || [];
+  // Retrieve and decrypt all messages for a given user
+  getAllMessages: (userId) => {
+    const rawMessages = getRawMessages(userId);
+    return rawMessages.map((msg) => {
+      if (msg.text) {
+        return { ...msg, text: decryptMessage(msg.text) };
+      }
+      return msg;
+    });
   },
 
-  saveMessage: (chatId, message) => {
-    const messages = JSON.parse(localStorage.getItem(LOCAL_MESSAGES_KEY) || '{}');
-    if (!messages[chatId]) messages[chatId] = [];
-    messages[chatId].push(message);
-    localStorage.setItem(LOCAL_MESSAGES_KEY, JSON.stringify(messages));
-    return message;
+  // Encrypt the new message and save it along with the already-encrypted messages
+  saveMessage: (userId, message) => {
+    const key = STORAGE_KEY_PREFIX + userId;
+    const rawMessages = getRawMessages(userId);
+    const encryptedMessage = {
+      ...message,
+      text: message.text ? encryptMessage(message.text) : "",
+    };
+    rawMessages.push(encryptedMessage);
+    localStorage.setItem(key, JSON.stringify(rawMessages));
   },
 
-  clearMessages: (chatId) => {
-    const messages = JSON.parse(localStorage.getItem(LOCAL_MESSAGES_KEY) || '{}');
-    delete messages[chatId];
-    localStorage.setItem(LOCAL_MESSAGES_KEY, JSON.stringify(messages));
-  }
+  clearMessages: (userId) => {
+    const key = STORAGE_KEY_PREFIX + userId;
+    localStorage.removeItem(key);
+  },
 }; 
